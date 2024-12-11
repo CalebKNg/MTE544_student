@@ -38,7 +38,7 @@ show_plot = True
 
 # When set to false, you can run this script stand-alone, it will use the information specified in main
 # When set to true, you are expected to use this with the stack and the specified map
-use_map = True
+use_map = False
 
 def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilities=None):
     """
@@ -64,8 +64,10 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         # [Part 2] TODO The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
         # Therefore, when using the map, the radius and edge length need to be adjusted for the resolution of the cell positions
         # Hint: in the map utilities there is the resolution stored
-        robot_radius = ...
-        max_edge_len = ...
+        # robot_radius = ...
+        # max_edge_len = ...
+        robot_radius = m_utilities.getResolution()*robot_radius
+        max_edge_len = m_utilities.getResolution()*max_edge_len
 
     # Get sample data
     sample_points = generate_sample_points(start, goal,
@@ -187,7 +189,21 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     # [Part 2] TODO Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and wether the edge between the two nodes is greater than max_edge_len
     # Hint: you may leverage on the query function of KDTree
     
-    ...
+    
+    # Check how long the distance is
+    dist = np.sqrt((gx-sx)**2+(gy-sy)**2)
+    if dist > max_edge_len:
+        return True
+    
+    # Check if there is a collision
+    vect = np.array(zip(np.linspace(gx, sx, 1000), np.linspace(gy, sy, 1000)))
+    # print(vect)
+
+    d, i = obstacle_kd_tree.query(vect, k=1)
+
+    for deez in d:
+        if deez > rr:
+            return True
 
     return False  # No collision
 
