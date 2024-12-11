@@ -197,7 +197,7 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     
     # Check if there is a collision
     vect = np.array(zip(np.linspace(gx, sx, 1000), np.linspace(gy, sy, 1000)))
-    # print(vect)
+    print(vect)
 
     d, i = obstacle_kd_tree.query(vect, k=1)
 
