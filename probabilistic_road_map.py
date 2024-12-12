@@ -27,6 +27,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import KDTree
+from scipy.spatial.distance import cdist
 from mapUtilities import *
 
 # Parameters of PRM
@@ -160,10 +161,32 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
     sample_x, sample_y = [], []
 
     while len(sample_x) <= N_SAMPLE:
-        ...
-    
+        # Make a random point
+        px = rng.integers(np.min(ox), np.max(ox))
+        py = rng.integers(np.min(oy), np.max(oy))
+        pt = np.array([px, py])
+
+
+
+
+        # Check if its close to another point
+        points = np.array(zip(sample_x, sample_y))
+        d = cdist(pt, points)
+        if d > rr:
+                # Check if its closer to an obstacle
+                d, i = obstacle_kd_tree.query([px, py], k=1)
+                if d > rr:
+                    sample_x.append(px)
+                    sample_y.append(py)
+        # for idx, x in sample_x:
+        #     if dist([x, sample_y[idx]],[px, py]) > rr:
+                
     # [Part 2] TODO Add also the start and goal to the samples so that they are connected to the roadmap
-    ...
+    sample_x.append(sx)
+    sample_x.append(gx)
+    sample_y.append(sy)
+    sample_y.append(gy)
+
 
     return [sample_x, sample_y]
 
@@ -191,13 +214,14 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     
     
     # Check how long the distance is
-    dist = np.sqrt((gx-sx)**2+(gy-sy)**2)
+    # dist = np.sqrt((gx-sx)**2+(gy-sy)**2)
+    dist = dist([gx, gy], [sx, sy])
     if dist > max_edge_len:
         return True
     
     # Check if there is a collision
     vect = np.array(zip(np.linspace(gx, sx, 1000), np.linspace(gy, sy, 1000)))
-    print(vect)
+    # print(vect)
 
     d, i = obstacle_kd_tree.query(vect, k=1)
 
