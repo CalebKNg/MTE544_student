@@ -149,3 +149,6 @@ def convertScanToCartesian(laserScan: LaserScan):
     cartesian_points_homo = np.column_stack((cartesian_points, np.ones(cartesian_points.shape[0])))
 
     return cartesian_points, cartesian_points_homo
+
+def dist(p1, p2):
+    return sqrt((p2[0]-p1[0])**2+(p2[1]-p1[1])**2)
