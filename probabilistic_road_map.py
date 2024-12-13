@@ -167,12 +167,13 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
         pt = np.array([px, py])
 
 
-
-
         # Check if its close to another point
         points = np.array(zip(sample_x, sample_y))
-        d = cdist(pt, points)
-        if d > rr:
+
+        tree = KDTree(np.array(zip(sample_x, sample_y)))
+        dd, ii = tree.query(pt, k=1)
+        #d = cdist([[px], [py]], points)
+        if dd > rr:
                 # Check if its closer to an obstacle
                 d, i = obstacle_kd_tree.query([px, py], k=1)
                 if d > rr:
