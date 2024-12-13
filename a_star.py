@@ -43,6 +43,15 @@ def return_path(current_node,maze):
 
     return path
 
+def return_path_prm(current_node):
+    path = []
+    while current_node is not None:
+        # input current position
+        path.append(current_node.position)
+        # set node to be parent
+        current_node = current_node.parent
+    return path[::-1]
+
 # Default search on a grid maze (implementation of Lab4)
 def search(maze, start, end, scale_factor):
     """
@@ -216,6 +225,79 @@ def search_PRM(points, prm, start, end):
 
     path_points = []
 
-    ...
+    yet_to_visit_dict = {} # will save the node, key is the position (tuple)
+    visited_dict = {}      # only save the True values, key is the position (tuple)
+
+    # Add the start node
+    yet_to_visit_dict[start_node.position] = start_node
+
+    outer_iterations = 0
+    max_iterations = (len(prm) // 2) ** 10  # Stopping condition
     
+    while len(yet_to_visit_dict) > 0:
+        # Every time any node is referred from yet_to_visit list, counter of limit operation incremented
+        outer_iterations += 1    
+
+        # Get the current node
+        current_node_position = (-999, -999)
+        current_node = Node(None, tuple(current_node_position))
+        current_node.f = 999999
+        for i_position in yet_to_visit_dict.keys():
+            i_node = yet_to_visit_dict[i_position] ## first is g, second is f
+            if i_node.f < current_node.f: ## compare the f
+                current_node = i_node
+                
+        # if we hit this point return the path such as it may be no solution or 
+        # computation cost is too high
+        if outer_iterations > max_iterations:
+            print ("giving up on pathfinding too many iterations")
+            return return_path_prm(current_node)   # Update for PRM
+
+        # Pop current node out off yet_to_visit list, add to visited list
+        yet_to_visit_dict.pop(current_node.position)
+        visited_dict[current_node.position] = True
+
+        # test if goal is reached or not, if yes then return the path
+        if current_node == end_node:
+            print ("Goal reached")
+            return return_path_prm(current_node)   # Update for PRM
+
+        # Generate children from all adjacent squares
+        children = []
+
+        connected_nodes = prm[points.index(tuple(current_node.position))]
+
+        for new_position in connected_nodes:
+
+            node_position = points[new_position]
+            # Create new node
+            new_node = Node(current_node, node_position)
+            # Append
+            children.append(new_node)
+
+                # Loop through children
+        
+        for child in children:
+  
+            # Child is on the visited list (search entire visited list)
+            if visited_dict.get(child.position, False):
+                continue
+
+            # Create the f, g, and h values
+            child.g = current_node.g + sqrt(((child.position[0] - current_node.position[0]) ** 2) + 
+                                           ((child.position[1] - current_node.position[1]) ** 2))
+            ## Heuristic costs calculated here, this is using eucledian distance
+            child.h = sqrt(((child.position[0] - end_node.position[0]) ** 2) + 
+                       ((child.position[1] - end_node.position[1]) ** 2)) 
+
+            child.f = child.g + child.h
+
+            # Child is already in the yet_to_visit list and g cost is already lower
+            child_node_in_yet_to_visit = yet_to_visit_dict.get(child.position, False)
+            if (child_node_in_yet_to_visit is not False) and (child.g >= child_node_in_yet_to_visit.g):
+                continue
+
+            # Add the child to the yet_to_visit list
+            yet_to_visit_dict[child.position] = child
+
     return path_points
