@@ -31,9 +31,9 @@ from scipy.spatial.distance import cdist
 from mapUtilities import *
 
 # Parameters of PRM
-N_SAMPLE = 800  # number of sample_points
+N_SAMPLE = 50  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point (one node)
-MAX_EDGE_LEN = 3  # Maximum edge length, in [m]
+MAX_EDGE_LEN = 10  # Maximum edge length, in [m]
 
 show_plot = True
 
@@ -159,35 +159,48 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
     # Hint: you may leverage on the query function of KDTree to find the nearest neighbors
 
     sample_x, sample_y = [], []
-
+    print("hi")
+    print(obstacle_kd_tree.n)
     while len(sample_x) <= N_SAMPLE:
         # Make a random point
         px = rng.integers(np.min(ox), np.max(ox))
         py = rng.integers(np.min(oy), np.max(oy))
+
         pt = np.array([px, py])
 
 
         # Check if its close to another point
-        points = np.array(zip(sample_x, sample_y))
+        points = np.array(list(zip(sample_x, sample_y)))
 
-        tree = KDTree(np.array(zip(sample_x, sample_y)))
-        dd, ii = tree.query(pt, k=1)
-        #d = cdist([[px], [py]], points)
-        if dd > rr:
+        if len(points) == 0:
+            # Check only collisions
+            d, i = obstacle_kd_tree.query(pt, k=1)
+            if d > rr:
+                sample_x.append(px)
+                sample_y.append(py)
+        else:
+            # Check proximity to points
+            tree = KDTree(points)
+            dd, ii = tree.query(pt, k=1)
+            print("dd"+str(dd))
+            if dd > rr:
                 # Check if its closer to an obstacle
-                d, i = obstacle_kd_tree.query([px, py], k=1)
+                d, i = obstacle_kd_tree.query(pt, k=1)
+                print("d"+str(d))
+
                 if d > rr:
                     sample_x.append(px)
                     sample_y.append(py)
-        # for idx, x in sample_x:
-        #     if dist([x, sample_y[idx]],[px, py]) > rr:
+
+        
+        print(len(sample_x))
+
                 
     # [Part 2] TODO Add also the start and goal to the samples so that they are connected to the roadmap
     sample_x.append(sx)
     sample_x.append(gx)
     sample_y.append(sy)
     sample_y.append(gy)
-
 
     return [sample_x, sample_y]
 
@@ -213,21 +226,26 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     # [Part 2] TODO Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and wether the edge between the two nodes is greater than max_edge_len
     # Hint: you may leverage on the query function of KDTree
     
-    
+    print("Collision between "+str(sx)+","+str(sy)+"and "+str(gx)+","+str(gy))
     # Check how long the distance is
     # dist = np.sqrt((gx-sx)**2+(gy-sy)**2)
     distance = dist([gx, gy], [sx, sy])
     if distance > max_edge_len:
+        print("too long")
         return True
     
     # Check if there is a collision
-    vect = np.array(zip(np.linspace(gx, sx, 1000), np.linspace(gy, sy, 1000)))
-    # print(vect)
+    vect = np.array(list(zip(np.linspace(gx, sx, 10), np.linspace(gy, sy, 10))))
+    print("VECT")
 
     d, i = obstacle_kd_tree.query(vect, k=1)
-
+    # if d> rr:
+    #     print("too close")
+    #     return True
+    print(d)
     for deez in d:
-        if deez > rr:
+        if deez < rr:
+            print("collision")
             return True
 
     return False  # No collision
@@ -255,6 +273,7 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
 
     sample_x = sample_points[0]
     sample_y = sample_points[1]
+    print("generatroamdap")
 
     # Note: The roadmap should have the same length as sample_points
     road_map = []
@@ -263,24 +282,40 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
     #[Part 2] TODO Generate roadmap for all sample points, i.e. create the edges between nodes (sample points)
     # Note: use the is_collision function to check for possible collisions (do not make an edge if there is collision)
     # Hint: you may ceate a KDTree object to help with the generation of the roadmap, but other methods also work
-    combinedSamples = np.array(zip(sample_x, sample_y))
+    combinedSamples = np.array(list(zip(sample_x, sample_y)))
     # craft tree
     tree = KDTree(combinedSamples)
     # Go over every point
-    for i in range(len(sample_x)):
+    for i in range(n_sample):
         x = sample_x[i]
         y = sample_y[i]
-
+        # print("x="+str(x))
+        # print("y="+str(y))
+        pt = np.array([x, y])
         currlist = []
 
-        d, index = tree.query([x, y])
-        for distance in d:
-            if is_collision(x, y, sample_x[index], rr, tree, MAX_EDGE_LEN):
-                pass
-            else:
+        d, index = tree.query(pt, k=N_KNN)
+        if type(d)== float:
+            xs, ys = combinedSamples[index]
+            # print("float")
+            if not is_collision(x, y, xs, ys, rr, obstacle_kd_tree, max_edge_len):
                 currlist.append(index)
+        else:
+            print("notfloat")
+            # print("d"+str(d))
+            # print("index"+str(index))
+            for idx, distance in enumerate(d):
+                xs, ys = combinedSamples[index[idx]]
+                # print("xs"+str(xs))
+                # print("ys"+str(ys))
+                # Make sure its not yourself
+                if xs != x and ys !=y:
+                    if not is_collision(x, y, xs, ys, rr, obstacle_kd_tree, max_edge_len):
+                        currlist.append(((index[idx])))
+
         road_map.append(currlist)
 
+    print(road_map)
 
     return road_map
 
