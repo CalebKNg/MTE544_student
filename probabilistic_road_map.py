@@ -173,11 +173,11 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
         points = np.array(zip(sample_x, sample_y))
         d = cdist(pt, points)
         if d > rr:
-                # Check if its closer to an obstacle
-                d, i = obstacle_kd_tree.query([px, py], k=1)
-                if d > rr:
-                    sample_x.append(px)
-                    sample_y.append(py)
+            # Check if its closer to an obstacle
+            d, i = obstacle_kd_tree.query([px, py], k=1)
+            if d > rr:
+                sample_x.append(px)
+                sample_y.append(py)
         # for idx, x in sample_x:
         #     if dist([x, sample_y[idx]],[px, py]) > rr:
                 
@@ -215,8 +215,8 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     
     # Check how long the distance is
     # dist = np.sqrt((gx-sx)**2+(gy-sy)**2)
-    dist = dist([gx, gy], [sx, sy])
-    if dist > max_edge_len:
+    distance = dist([gx, gy], [sx, sy])
+    if distance > max_edge_len:
         return True
     
     # Check if there is a collision
@@ -262,7 +262,24 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
     #[Part 2] TODO Generate roadmap for all sample points, i.e. create the edges between nodes (sample points)
     # Note: use the is_collision function to check for possible collisions (do not make an edge if there is collision)
     # Hint: you may ceate a KDTree object to help with the generation of the roadmap, but other methods also work
-    ...
+    combinedSamples = np.array(zip(sample_x, sample_y))
+    # craft tree
+    tree = KDTree(combinedSamples)
+    # Go over every point
+    for i in range(len(sample_x)):
+        x = sample_x[i]
+        y = sample_y[i]
+
+        currlist = []
+
+        d, index = tree.query([x, y])
+        for distance in d:
+            if is_collision(x, y, sample_x[index], rr, tree, MAX_EDGE_LEN):
+                pass
+            else:
+                currlist.append(index)
+        road_map.append(currlist)
+
 
     return road_map
 
