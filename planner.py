@@ -47,7 +47,22 @@ class planner:
         # [Part 3] TODO Use the PRM and search_PRM to generate the path
         # Hint: see the example of the ASTAR case below, there is no scaling factor for PRM
         if type == PRM_PLANNER:
-            ...
+            startPose = [int(i) for i in startPose]
+            endPose   = [int(j) for j in endPose]
+            start_time = time.time()
+            sample_points_tuple, roadmap = prm_graph(startPose, endPose, self.obstaclesListCell, robot_radius=30, m_utilities=self.m_utilities)
+            print("sample_points")
+            print(sample_points_tuple)
+            print("roadmap")
+            print(roadmap)
+            path = search_PRM(sample_points_tuple, roadmap, startPose, endPose)
+
+            end_time = time.time()
+
+
+            print(f"the time took for PRM a_star calculation was {end_time - start_time}")
+            print(path)
+            path_ = [[x, y] for x,y in path ]
 
         elif type == ASTAR_PLANNER: # This is the same planner you should have implemented for Lab4
             scale_factor = 4 # Depending on resolution, this can be smaller or larger
