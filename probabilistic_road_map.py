@@ -31,15 +31,15 @@ from scipy.spatial.distance import cdist
 from mapUtilities import *
 
 # Parameters of PRM
-N_SAMPLE = 50  # number of sample_points
+N_SAMPLE = 800  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point (one node)
-MAX_EDGE_LEN = 10  # Maximum edge length, in [m]
+MAX_EDGE_LEN = 300  # Maximum edge length, in [m]
 
 show_plot = True
 
 # When set to false, you can run this script stand-alone, it will use the information specified in main
 # When set to true, you are expected to use this with the stack and the specified map
-use_map = False
+use_map = True
 
 def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilities=None):
     """
@@ -87,7 +87,7 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
             # When using the map, first convert cells into positions, then plot (for a more intuitive visualization)
             # Plot the sample points
             samples_pos = np.array([m_utilities.cell_2_position([i, j]) for i, j in zip(sample_points[0], sample_points[1])])
-            print(samples_pos)
+            # print(samples_pos)
             sample_x = samples_pos[:, 0]
             sample_y = samples_pos[:, 1]
             plt.plot(sample_x, sample_y, ".b")   
@@ -159,8 +159,8 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
     # Hint: you may leverage on the query function of KDTree to find the nearest neighbors
 
     sample_x, sample_y = [], []
-    print("hi")
-    print(obstacle_kd_tree.n)
+    # print("hi")
+    # print(obstacle_kd_tree.n)
     while len(sample_x) <= N_SAMPLE:
         # Make a random point
         px = rng.integers(np.min(ox), np.max(ox))
@@ -182,18 +182,18 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
             # Check proximity to points
             tree = KDTree(points)
             dd, ii = tree.query(pt, k=1)
-            print("dd"+str(dd))
+            # print("dd"+str(dd))
             if dd > rr:
                 # Check if its closer to an obstacle
                 d, i = obstacle_kd_tree.query(pt, k=1)
-                print("d"+str(d))
+                # print("d"+str(d))
 
                 if d > rr:
                     sample_x.append(px)
                     sample_y.append(py)
 
         
-        print(len(sample_x))
+        # print(len(sample_x))
 
                 
     # [Part 2] TODO Add also the start and goal to the samples so that they are connected to the roadmap
@@ -226,26 +226,26 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     # [Part 2] TODO Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and wether the edge between the two nodes is greater than max_edge_len
     # Hint: you may leverage on the query function of KDTree
     
-    print("Collision between "+str(sx)+","+str(sy)+"and "+str(gx)+","+str(gy))
+    # print("Collision between "+str(sx)+","+str(sy)+"and "+str(gx)+","+str(gy))
     # Check how long the distance is
     # dist = np.sqrt((gx-sx)**2+(gy-sy)**2)
     distance = dist([gx, gy], [sx, sy])
     if distance > max_edge_len:
-        print("too long")
+        # print("too long")
         return True
     
     # Check if there is a collision
     vect = np.array(list(zip(np.linspace(gx, sx, 10), np.linspace(gy, sy, 10))))
-    print("VECT")
+    # print("VECT")
 
     d, i = obstacle_kd_tree.query(vect, k=1)
     # if d> rr:
     #     print("too close")
     #     return True
-    print(d)
+    # print(d)
     for deez in d:
         if deez < rr:
-            print("collision")
+            # print("collision")
             return True
 
     return False  # No collision
@@ -301,7 +301,7 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
             if not is_collision(x, y, xs, ys, rr, obstacle_kd_tree, max_edge_len):
                 currlist.append(index)
         else:
-            print("notfloat")
+            # print("notfloat")
             # print("d"+str(d))
             # print("index"+str(index))
             for idx, distance in enumerate(d):
@@ -315,7 +315,7 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
 
         road_map.append(currlist)
 
-    print(road_map)
+    # print(road_map)
 
     return road_map
 
@@ -369,6 +369,7 @@ def main(rng=None):
 
 
     obstacles = np.column_stack((ox, oy))
+    # print(obstacles)
 
     prm_graph([sx, sy], [gx, gy], obstacles, robot_size, rng=rng)
 
