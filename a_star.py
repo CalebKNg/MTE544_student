@@ -43,11 +43,11 @@ def return_path(current_node,maze):
 
     return path
 
-def return_path_prm(current_node):
+def return_path_prm(points, current_node):
     path = []
     while current_node is not None:
         # input current position
-        path.append(current_node.position)
+        path.append(points[current_node.position])
         # set node to be parent
         current_node = current_node.parent
     return path[::-1]
@@ -222,6 +222,8 @@ def search_PRM(points, prm, start, end):
     end_idx = points.index(tuple(end))
     end_node = Node(None, end_idx)
     end_node.g = end_node.h = end_node.f = 0
+    ex = points[end_idx][0]
+    ey = points[end_idx][1]
 
     path_points = []
 
@@ -237,7 +239,7 @@ def search_PRM(points, prm, start, end):
     while len(yet_to_visit_dict) > 0:
         # Every time any node is referred from yet_to_visit list, counter of limit operation incremented
         outer_iterations += 1    
-
+        # print(outer_iterations)
         # Get the current node
         current_node_position = (-999, -999)
         current_node = Node(None, tuple(current_node_position))
@@ -251,7 +253,7 @@ def search_PRM(points, prm, start, end):
         # computation cost is too high
         if outer_iterations > max_iterations:
             print ("giving up on pathfinding too many iterations")
-            return return_path_prm(current_node)   # Update for PRM
+            return return_path_prm(points, current_node)   # Update for PRM
 
         # Pop current node out off yet_to_visit list, add to visited list
         yet_to_visit_dict.pop(current_node.position)
@@ -260,35 +262,63 @@ def search_PRM(points, prm, start, end):
         # test if goal is reached or not, if yes then return the path
         if current_node == end_node:
             print ("Goal reached")
-            return return_path_prm(current_node)   # Update for PRM
+            return return_path_prm(points, current_node)   # Update for PRM
 
         # Generate children from all adjacent squares
         children = []
 
-        connected_nodes = prm[points.index(tuple(current_node.position))]
+        # prm requires an index and outputs a list of tuples
+        # to find the index, we need the index of the current node. 
+        # print("INDEX is" +str(points.index(tuple(current_node.position))))
+        # print("prm"+str(len(prm[0])))
+        # print(current_node.position)
+        # print("length"+str(len(prm)))
+        # connected_nodes = prm[points.index(current_node.position)]
+
+        # Position here is the node index corresponding to the point
+        connected_nodes = prm[current_node.position]
+        # connected_nodes is a bunch of tuples
+
+        curx = points[current_node.position][0]
+        cury = points[current_node.position][1]
+        # print("curxy")
+        # print(curx)
+        # print(cury)
 
         for new_position in connected_nodes:
-
-            node_position = points[new_position]
+            
+            # node_position = points[new_position]
             # Create new node
-            new_node = Node(current_node, node_position)
+            # new_node = Node(current_node, node_position)
+            new_node = Node(current_node, new_position)
+
             # Append
             children.append(new_node)
 
-                # Loop through children
+        # Loop through children
         
         for child in children:
-  
+        #     print("First child is")
+        #     print(child.position)
+
             # Child is on the visited list (search entire visited list)
             if visited_dict.get(child.position, False):
                 continue
+            cx = points[child.position][0]
+            cy = points[child.position][1]
+            # print(cx)
+            # print(cy)
 
             # Create the f, g, and h values
-            child.g = current_node.g + sqrt(((child.position[0] - current_node.position[0]) ** 2) + 
-                                           ((child.position[1] - current_node.position[1]) ** 2))
+            # child.g = current_node.g + sqrt(((child.position[0] - current_node.position[0]) ** 2) + 
+            #                                ((child.position[1] - current_node.position[1]) ** 2))
+            
+
+            child.g = current_node.g + sqrt(((cx - curx) ** 2) + 
+                                           ((cy - cury) ** 2))
             ## Heuristic costs calculated here, this is using eucledian distance
-            child.h = sqrt(((child.position[0] - end_node.position[0]) ** 2) + 
-                       ((child.position[1] - end_node.position[1]) ** 2)) 
+            child.h = sqrt(((cx - ex) ** 2) + 
+                       ((cy- ey) ** 2)) 
 
             child.f = child.g + child.h
 
