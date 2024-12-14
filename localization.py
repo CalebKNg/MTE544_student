@@ -68,9 +68,13 @@ class localization(Node):
                         0,
                         0])        
 
-            Q=0.1*np.eye(6)
-            R=0.4*np.eye(4)
+            # Q=0.1*np.eye(6)
+            # R=0.4*np.eye(4)
+            # P=Q.copy()
+            Q= np.diag(np.full(6, 0.2))  
+            R= np.diag(np.full(4, 0.5))
             P=Q.copy()
+                     
             
             self.kf=kalman_filter(P,Q,R, x)
             self.kalmanInitialized = True

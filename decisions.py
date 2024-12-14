@@ -52,9 +52,10 @@ class decision_maker(Node):
             self.planner=planner(POINT_PLANNER)
             return -1
 
-        # [Part 4] TODO PID gains if needed
-        self.controller=trajectoryController(klp=0.4, klv=0.8, kap=1.2, kav=0.9)      
-        
+        # # [Part 4] TODO PID gains if needed
+        # self.controller=trajectoryController(klp=10, klv=1.2, kap=1.2, kav=0.9)      
+         # [Part 4] TODO PID gains if needed
+        self.controller=trajectoryController(klp=10, klv=1.2, kli=0.05) 
         if motion_type in [TRAJECTORY_PLANNER, ASTAR_PLANNER, PRM_PLANNER]:
             self.planner = planner(motion_type)
         else:            
