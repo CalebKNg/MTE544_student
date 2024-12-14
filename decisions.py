@@ -39,7 +39,7 @@ class decision_maker(Node):
 
 
         # [Part 4] TODO Use the EKF localization instead of rawSensors
-        self.localizer=localization(rawSensors)
+        self.localizer=localization(type = kalmanFilter)
 
 
         self.goal = None
@@ -160,6 +160,7 @@ def main(args=None):
 
     # Set the desired planner here
     DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=PRM_PLANNER)
+    # DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=ASTAR_PLANNER)
 
     try:
         spin(DM)
