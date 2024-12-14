@@ -53,7 +53,7 @@ class decision_maker(Node):
             return -1
 
         # [Part 4] TODO PID gains if needed
-        self.controller=trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
+        self.controller=trajectoryController(klp=0.4, klv=0.8, kap=1.2, kav=0.9)      
         
         if motion_type in [TRAJECTORY_PLANNER, ASTAR_PLANNER, PRM_PLANNER]:
             self.planner = planner(motion_type)
@@ -159,8 +159,8 @@ def main(args=None):
     odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
 
     # Set the desired planner here
-    DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=PRM_PLANNER)
-    # DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=ASTAR_PLANNER)
+    # DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=PRM_PLANNER)
+    DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=ASTAR_PLANNER)
 
     try:
         spin(DM)

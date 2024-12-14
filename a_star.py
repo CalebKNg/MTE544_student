@@ -26,6 +26,7 @@ class Node:
 #This function return the path of the search
 def return_path(current_node,maze):
     path = []
+    total_cost=0
     no_rows, no_columns = np.shape(maze)
     # here we create the initialized result maze with -1 in every position
     result = [[-1 for i in range(no_columns)] for j in range(no_rows)]
@@ -33,6 +34,7 @@ def return_path(current_node,maze):
     while current is not None:
         path.append(current.position)
         current = current.parent
+        # total_cost += current.g
     # Return reversed path as we need to show from start to end path
     path = path[::-1]
     start_value = 0
@@ -40,16 +42,19 @@ def return_path(current_node,maze):
     for i in range(len(path)):
         result[path[i][0]][path[i][1]] = start_value
         start_value += 1
-
+    # print("TOTALCOST"+str(total_cost))
     return path
 
 def return_path_prm(points, current_node):
     path = []
+    total_cost = 0
     while current_node is not None:
         # input current position
         path.append(points[current_node.position])
+        total_cost += current_node.g
         # set node to be parent
         current_node = current_node.parent
+    print("TOTALCOST"+str(total_cost))
     return path[::-1]
 
 # Default search on a grid maze (implementation of Lab4)
